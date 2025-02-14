@@ -1,16 +1,21 @@
-FROM python:3.10-slim
+# Use an official Python image as base
+FROM python:3.10
 
+# Install Nginx
+RUN apt-get update && apt-get install -y nginx
+
+# Copy your Python app
 WORKDIR /app
+COPY . /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN pip install -r requirements.txt
 
-# Copy the project files
-COPY main.py .
-COPY api/ api/
-COPY core/ core/
-COPY tests/ tests/
+# Copy Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Expose ports
+EXPOSE 80
+
+# Start Nginx and your Python app
+CMD service nginx start && uvicorn app:app --host 0.0.0.0 --port 8000

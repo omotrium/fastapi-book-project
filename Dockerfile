@@ -20,4 +20,4 @@ EXPOSE 8000 80
 
 
 # Start Nginx and Gunicorn (FastAPI) in the same container
-CMD service nginx start && uvicorn -w 4 -b 0.0.0.0:8000 main:app
+CMD service nginx start && gunicorn -w 4 -b 0.0.0.0:8000 main:app

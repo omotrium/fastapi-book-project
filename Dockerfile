@@ -1,35 +1,22 @@
-# Use official Python image as base for FastAPI
-FROM python:3.9-slim as python-base
-
-# Set environment variables for pip
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Set working directory in the container
-WORKDIR /app
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim as base
 
 # Install dependencies
+WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code to the container
 COPY . /app/
 
-# Expose FastAPI app on port 8000
-EXPOSE 8000
+# Install Nginx
+RUN apt-get update && apt-get install -y nginx
 
-# Use gunicorn as a process manager for FastAPI
-CMD ["gunicorn", "app:app", "--workers", "4", "--bind", "0.0.0.0:8000"]
-
-# Use Nginx image as a base for Nginx setup
-FROM nginx:latest
-
-# Remove the default Nginx config and copy our custom config
-RUN rm /etc/nginx/conf.d/default.conf
+# Copy the Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80 for Nginx
-EXPOSE 80
+# Expose ports
+EXPOSE 8000 80
 
-# Start Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]
+# Start Nginx and Gunicorn (FastAPI) in the same container
+CMD service nginx start && gunicorn -w 4 -b 0.0.0.0:8000 app:app

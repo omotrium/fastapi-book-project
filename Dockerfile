@@ -1,23 +1,17 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim as base
+# Use official Python image
+FROM python:3.9
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the application files
+COPY . .
 
 # Install dependencies
-WORKDIR /app
-COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code to the container
-COPY . /app/
+# Expose the port FastAPI runs on
+EXPOSE 8000
 
-# Install Nginx
-RUN apt-get update && apt-get install -y nginx
-
-# Copy the Nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose ports
-EXPOSE 8000 80
-
-
-# Start Nginx and Gunicorn (FastAPI) in the same container
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000", "--workers", "4"]
+# Start FastAPI using Uvicorn
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

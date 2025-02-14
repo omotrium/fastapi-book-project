@@ -1,22 +1,23 @@
-# Use an official Python image as base
-FROM python:3.10
+# Use Python as the base image
+FROM python:3.11
 
 # Install Nginx
 RUN apt-get update && apt-get install -y nginx
 
-# Copy your Python app
+# Set the working directory
 WORKDIR /app
-COPY . /app
 
-# Install dependencies
-RUN pip install -r requirements.txt
+# Copy application code
+COPY . .
 
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
 # Expose ports
 EXPOSE 80
 
-# Start Nginx and your Python app
-CMD service nginx start && uvicorn main:app --host 0.0.0.0 --port 8000
-
+# Start Nginx and FastAPI
+CMD ["sh", "start.sh"]
